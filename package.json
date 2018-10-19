@@ -4,7 +4,8 @@
   "description": "Backend de la app expresate-ucab para la tesis de Milad y Mariam",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon app.js",
+    "test": "mocha --reporter nyan tests/"
   },
   "author": "Leonardo Guedez",
   "license": "ISC",
@@ -12,5 +13,9 @@
     "express": "^4.16.4",
     "mongoose": "^5.3.4",
     "nodemon": "^1.18.4"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
   }
 }

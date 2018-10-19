@@ -3,7 +3,7 @@ const User = require('../schemas/user');
 
 
 describe('User', function() {
-    it('should be a User', function() {
+    it('should have authenticate function', function() {
         expect(User.authenticate).to.be.a('function');
     });
 });

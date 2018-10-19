@@ -9,26 +9,26 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Cual va a ser la "clave primaria"? username o email
-UserSchema.statics.authenticate = function(username, password, callback) {
+UserSchema.statics.authenticate = function (username, password, callback) {
     User.findOne({ username: username })
-    .exec(function(err, user) {
-        if (err) {
-            return callback(err);
-        } else if (!user) {
-            const err = new Error('User not found!');
-            console.log(`Usuario ${username} no encontrado`);
-            err.status = 401;
-            return callback(err);
-        }
-
-        if (username.password === password) {
-            console.log(`Usuario ${username} encontrado: ${user.name}`);
-            return callback(null, user);
-        } else {
-            console.log(`Clave incorrecta para ${username}`);
-            return callback();
-        }
-    });
+        .exec(function (err, user) {
+            if (err) {
+                return callback(err);
+            } else if (!user) {
+                const err = new Error('User not found!');
+                console.log(`Usuario ${username} no encontrado`);
+                err.status = 401;
+                return callback(err);
+            }
+            
+            if (user.password === password) {
+                console.log(`Usuario ${username} encontrado: ${user.name}`);
+                return callback(null, user);
+            } else {
+                console.log(`Clave incorrecta para ${username}`);
+                return callback();
+            }
+        });
 };
 
 const User = mongoose.model('User', UserSchema);

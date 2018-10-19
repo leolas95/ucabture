@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const User = require('../schemas/user');
 
+router.get('/', function(req, res) {
+    res.status(200);
+    res.type('html');
+    res.end('<h1>Pagina de prueba. Aqui no va nada</h1>');
+});
+
 router.post('/login', function (req, res) {
     console.log('POST login');
     console.log(req.body);

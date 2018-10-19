@@ -1,0 +1,16 @@
+{
+  "name": "expresate-ucab",
+  "version": "1.0.0",
+  "description": "Backend de la app expresate-ucab para la tesis de Milad y Mariam",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Leonardo Guedez",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "mongoose": "^5.3.4",
+    "nodemon": "^1.18.4"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "expresate-ucab",
+  "name": "ucabture",
   "version": "1.0.0",
   "description": "Backend de la app expresate-ucab para la tesis de Milad y Mariam",
   "main": "index.js",

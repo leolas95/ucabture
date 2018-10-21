@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
     name: String,
@@ -20,7 +21,7 @@ UserSchema.statics.authenticate = function (username, password, callback) {
                 err.status = 401;
                 return callback(err);
             }
-            
+
             if (user.password === password) {
                 console.log(`Usuario ${username} encontrado: ${user.name}`);
                 return callback(null, user);
@@ -30,6 +31,13 @@ UserSchema.statics.authenticate = function (username, password, callback) {
             }
         });
 };
+
+UserSchema.methods.isValidPassword = function (password) {
+    return bcrypt.compareSync(password, this.password, function (err, res) {
+        console.log('res', res);
+        return res === true;
+    });
+}
 
 const User = mongoose.model('User', UserSchema);
 module.exports = User;

@@ -3,6 +3,7 @@ node_js:
 - '10'
 notifications:
   email:
+  - leolespaul@gmail.com
   - milad.zaghab@gmail.com
   - mariamsalloumstanbuly@gmail.com
 deploy:

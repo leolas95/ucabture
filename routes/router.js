@@ -70,7 +70,7 @@ router.post('/upload',
       user.images.push(imageData);
       user.save();
       res
-        .status(200)
+        .status(201)
         .json({ status: 'OK', message: 'Imagen almacenada correctamente' });
     });
   });
@@ -194,7 +194,7 @@ router.post('/signup', function (req, res) {
           } else {
             console.log(`Usuario ${newUser.username} creado con exito`);
             res
-              .status(200)
+              .status(201)
               .json({ status: "OK", message: "User created succesfully!" });
           }
         });

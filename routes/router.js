@@ -3,20 +3,28 @@ const router = express.Router();
 const User = require('../schemas/user');
 const bcrypt = require('bcrypt');
 const saltRounds = 5;
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
+/*const multer = require('multer');
 
+// Configuracion de almacenamiento para multer
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'images/');
+    },
 
-/*passport.use(new LocalStrategy(
-    function (username, password, done) {
-        User.findOne({ username: username }, function (err, user) {
-            if (err) { return done(err); }
-            if (!user) { return done(null, false, { message: 'Incorrect username' }); }
-            if (!user.isValidPassword(password)) { return done(null, false, { message: 'Incorrect password' }); }
-            return done(null, user);
-        });
+    filename: function (req, file, cb) {
+        cb(null, new Date().toTimeString() + file.originalname);
     }
-));
+});
+
+const upload = multer({ storage: storage });
+
+router.post('/upload', upload.single('image'), (req, res, next) => {
+    console.log(req.body);
+    res
+        .status(200)
+        .contentType('application/json')
+        .json({ status: 'OK', message: 'Image stored succesfully' });
+});*/
 
 router.get('/', function (req, res) {
     res.status(200);
@@ -24,14 +32,7 @@ router.get('/', function (req, res) {
     res.end('<h1>Pagina de prueba. Aqui no va nada</h1>');
 });
 
-router.post('/login',
-    passport.authenticate('local', { session: false }),
-    function(req, res) {
-        console.log(req.user);
-        res.status(200).json({ status: 'OK', message: 'Logged in succesfully!' });
-    }
-);*/
-
+// Endpoint para login
 router.post('/login', function (req, res) {
     console.log('POST login');
     console.log(req.body);

@@ -5,6 +5,7 @@ const router = require('./routes/router');
 const passport = require('passport');
 
 
+app.use('/images', express.static('images'));
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 

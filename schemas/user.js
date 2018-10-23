@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema({
     username: String,
     password: String,
     email: String,
+    images: Array
 });
 
 // Cual va a ser la "clave primaria"? username o email

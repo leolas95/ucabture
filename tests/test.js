@@ -1,6 +1,5 @@
 const expect = require('chai').expect;
 const User = require('../schemas/user');
-const bcrypt = require('bcrypt');
 
 describe('User', function () {
 

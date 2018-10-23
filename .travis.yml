@@ -1,11 +1,7 @@
 language: node_js
+asdasd:
 node_js:
-- '10'
-notifications:
-  email:
-  - leolespaul@gmail.com
-  - milad.zaghab@gmail.com
-  - mariamsalloumstanbuly@gmail.com
+  - '10'
 deploy:
   provider: heroku
   api_key:

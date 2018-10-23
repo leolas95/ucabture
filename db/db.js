@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-// mongoose.connect('mongodb://leo:abc123@ds135750.mlab.com:35750/expresateucabdb', { useNewUrlParser: true });
 mongoose.connect('mongodb://leo:abc123@ds135750.mlab.com:35750/expresateucabdb', { useNewUrlParser: true });
 const db = mongoose.connection;
 

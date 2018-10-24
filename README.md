@@ -1,7 +1,7 @@
 # Backend para la app de Ucabture
 [![Build Status](https://travis-ci.org/leolas95/ucabture.svg?branch=master)](https://travis-ci.org/leolas95/ucabture)
 
-![Logo](logo.png)
+![Logo](iso.png)
 
 # Primero tener instalado:
 
@@ -52,3 +52,5 @@ GET | /:username/feed | Obtiene el feed de imagenes del usuario :username | user
 POST | /signup | Endpoint para crear un nuevo usuario. | **name**: el nombre real del usuario<br/> **lastname**: el apellido real del usuario<br/> **username**: el nombre de usuario (unico dentro del sistema)<br/> **password**: la clave de acceso del usuario<br/> **email**: correo electronico del usuario<br/> | 201 | 400 si el usuario ya existe
 POST | /upload | Sube una nueva imagen al servidor | **description**: La descripcion de la imagen<br/> **emoji**: La calificacion dada a la imagen<br/> **lat**: latitud de donde fue tomada la imagen<br/> **lng**: longitud de donde fue tomada la imagen<br/> **date**: Fecha en que fue tomada la imagen<br/> **username**: nombre de usuario del usuario que sube la imagen<br/> **image**: la imagen propiamente dicha (recordar que debe ser el ultimo parametro) | 201 | 404 si el usuario no existe
 POST | /login | Permite iniciar sesion en el sistema | **username**: nombre de usuario<br/> **password**: clave del usuario | 200 | 400 si la clave es incorrecta o el usuario no existe
+POST | /admins/login | Permite que un administrador inicie sesion | **username**: El nombre de usuario del administrador<br/> **password**: La clave de acceso del administrador | 200 | 400 si los campos estan vacios, o la clave ingresada es invalida<br/> 404 si el administrador no esta registrado.
+POST | /admins/signup | Registrar un nuevo administrador | **name**: nombre real del administrador<br/> **lastname**: apellido<br/> **username**: nombre de usuario del administrador<br/> **password**: la clave de acceso del administrador | 200 | 400 si el username esta ocupado

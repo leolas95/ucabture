@@ -5,7 +5,6 @@ const User = require('../schemas/user');
 const bcrypt = require('bcrypt');
 const saltRounds = 5;
 const multer = require('multer');
-const path = require('path');
 const url = require('url');
 
 const imagesDestination = 'images/';
@@ -101,15 +100,11 @@ router.get('/:username/feed', (req, res) => {
 });
 
 router.get('/', function (req, res) {
-  res.status(200);
-  res.type('html');
-  res.end('<h1>Pagina de prueba. Aqui no va nada</h1>');
+  res.status(200).end();
 });
 
 // Endpoint para login
 router.post('/login', function (req, res) {
-  console.log('POST login');
-  console.log(req.body);
 
   const username = req.body.username;
   const password = req.body.password;
@@ -151,7 +146,6 @@ router.post('/login', function (req, res) {
 
 // Endpoint para registrar al usuario
 router.post('/signup', function (req, res) {
-  console.log('POST signup');
   // Por ahora asumimos que todos los campos estan presentes
   const name = req.body.name;
   const lastname = req.body.lastname;
@@ -159,11 +153,15 @@ router.post('/signup', function (req, res) {
   const password = req.body.password;
   const email = req.body.email;
 
+  if (!name || !lastname || !username || !password || !email ||
+    !name.trim() || !lastname.trim() || !username.trim() || !password.trim() || !email.trim()) {
+    return res.status(400).json({ message: 'Los campos no pueden estar vacios' });
+  }
+
   // Busca a ver si el usuario ya existe
   User.findOne({ username: username }, (err, user) => {
     if (err) {
-      console.log('Error al registrarse');
-      throw err;
+      return res.status(500).end();
     }
 
     // Si es asi, entonces no puede registrarse

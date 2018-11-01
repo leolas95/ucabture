@@ -33,9 +33,10 @@ UserSchema.statics.authenticate = function (username, password, callback) {
         });
 };
 
+// Comprueba si la clave dada realmente es la del usuario
+// Retorna true si es asi, false sino
 UserSchema.methods.isValidPassword = function (password) {
     return bcrypt.compareSync(password, this.password, function (err, res) {
-        console.log('res', res);
         return res === true;
     });
 }

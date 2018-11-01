@@ -1,10 +1,13 @@
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').load();
+}
+
 const express = require('express');
 const app = express();
 const db = require('./db/db');
 const users = require('./routes/users');
 const admins = require('./routes/admins');
 const passport = require('passport');
-
 
 app.use('/images', express.static('images'));
 app.use(express.urlencoded({ extended: true }));

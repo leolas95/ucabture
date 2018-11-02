@@ -2,6 +2,7 @@ language: node_js
 node_js:
   - '10'
 after_success:
+  - "chmod a+x ./travis-automerge"
   - "BRANCHES_TO_MERGE_REGEX='dev' BRANCH_TO_MERGE_INTO=qa GITHUB_REPO=leolas95/ucabture ./travis-automerge"
 deploy:
   provider: heroku

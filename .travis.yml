@@ -2,9 +2,7 @@ language: node_js
 node_js:
   - '10'
 after_success:
-  - "curl -o /tmp/travis-automerge https://raw.githubusercontent.com/cdown/travis-automerge/master/travis-automerge"
-  - "chmod a+x /tmp/travis-automerge"
-  - "BRANCHES_TO_MERGE_REGEX='dev' BRANCH_TO_MERGE_INTO=qa GITHUB_REPO=leolas95/ucabture /tmp/travis-automerge"
+  - "BRANCHES_TO_MERGE_REGEX='dev' BRANCH_TO_MERGE_INTO=qa GITHUB_REPO=leolas95/ucabture ./travis-automerge"
 deploy:
   provider: heroku
   api_key:

@@ -1,7 +1,10 @@
 language: node_js
-asdasd:
 node_js:
   - '10'
+after_success:
+  - "curl -o /tmp/travis-automerge https://raw.githubusercontent.com/cdown/travis-automerge/master/travis-automerge"
+  - "chmod a+x /tmp/travis-automerge"
+  - "BRANCHES_TO_MERGE_REGEX='dev' BRANCH_TO_MERGE_INTO=qa GITHUB_REPO=leolas95/ucabture /tmp/travis-automerge"
 deploy:
   provider: heroku
   api_key:
@@ -10,3 +13,6 @@ deploy:
   on:
     branch: master
     repo: leolas95/ucabture
+env:
+  global:
+    secure: CyhWXNMlEkF9+p+Q97SxagxIvmWRqKW7/ffrrsZQpScLIooAwDhE93VB8cQc0tAR0HkqHC31q74+NQwHq+l2iH/ubVi7+zyD9SqqbZhONx8JO1NArUGWv1DetjSARcpSWP8fta9ZMCoNKKqRfVrmhIzgyXdhOIVT9TD4R1BmYI9xMxxb5fTFY98oEMsvIYDyuf78idIBfQdtd2dodh07EfHzvsQnKEYSqIwAJRO6H/A+Gltn+qk7YexrTLgkyw51gwQPwjNH7TqQCnG41iVi1RFwxzIT+0X7W047a38vdw8972Uue7avIjOQf93e07HQPS3Br0c3lSZ7WgNf7hvq65SaojKEY2XuFZcy2phC6jFy1sUdWfCOCmcobdDgJsf8kwYsTslhet+v5Brz/u86hyuVm6J/Qk8AIZZGwvupI7v7JBjaSTQ8JWlSFiUevBoSUNiBVmh6snST1ItSz6pGTFXcAsHskPbHno3bh/aopfzHcbnifY9PMz3BNTxn/S1UinFJPg7UMbZT2Z9mjnY2k0LmXXtW0ezVI7JAxU0AkdThooh9e63Kkn7Kq4QRtJEvIaUfEbYqi9/NQti5frliNdQ91DzMTm6xl4WdxiNWJgvdcNppO80hbgzgaav3cwfnc15ssfPt1i3pcRvJg0JyFvwPtl1810Gpblw3rlPXdAc=

@@ -9,6 +9,14 @@ const url = require('url');
 
 const imagesDestination = 'images/';
 
+// Si el directorio donde se guardaran las imagenes no existe, lo crea
+if (!fs.existsSync(imagesDestination)) {
+  console.log('NO Existe');
+  fs.mkdirSync(imagesDestination);
+} else {
+  console.log('Existe');
+}
+
 // Configuracion de almacenamiento para multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

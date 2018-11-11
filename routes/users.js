@@ -11,10 +11,7 @@ const imagesDestination = 'images/';
 
 // Si el directorio donde se guardaran las imagenes no existe, lo crea
 if (!fs.existsSync(imagesDestination)) {
-  console.log('NO Existe');
   fs.mkdirSync(imagesDestination);
-} else {
-  console.log('Existe');
 }
 
 // Configuracion de almacenamiento para multer
@@ -54,9 +51,9 @@ router.post('/upload',
     User.findOne({ username: req.body.username }, (err, user) => {
       if (err) {
         console.log('Error al guardar imagen');
-        res
-          .status(400)
-          .json({ status: 'Error', message: 'Hubo un error al guardar la imagen:' });
+        return res
+                .status(500)
+                .json({ status: 'Error', message: 'Hubo un error en el servidor al guardar la imagen:' });
       }
 
       // Verifica que el usuario exista
@@ -154,15 +151,15 @@ router.post('/login', function (req, res) {
 
 // Endpoint para registrar al usuario
 router.post('/signup', function (req, res) {
-  // Por ahora asumimos que todos los campos estan presentes
   const name = req.body.name;
   const lastname = req.body.lastname;
   const username = req.body.username;
   const password = req.body.password;
   const email = req.body.email;
+  const group = req.body.group;
 
-  if (!name || !lastname || !username || !password || !email ||
-    !name.trim() || !lastname.trim() || !username.trim() || !password.trim() || !email.trim()) {
+  if (!name || !lastname || !username || !password || !email || !group ||
+    !name.trim() || !lastname.trim() || !username.trim() || !password.trim() || !email.trim() || !group.trim()) {
     return res.status(400).json({ message: 'Los campos no pueden estar vacios' });
   }
 
@@ -190,7 +187,8 @@ router.post('/signup', function (req, res) {
           lastname: lastname,
           username: username,
           password: hash,
-          email: email
+          email: email,
+          group: group,
         };
 
         User.create(userData, function (err, newUser) {

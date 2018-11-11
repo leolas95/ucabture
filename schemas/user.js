@@ -7,10 +7,10 @@ const UserSchema = new mongoose.Schema({
     username: String,
     password: String,
     email: String,
-    images: Array
+    images: Array,
+    group: String,
 });
 
-// Cual va a ser la "clave primaria"? username o email
 UserSchema.statics.authenticate = function (username, password, callback) {
     User.findOne({ username: username })
         .exec(function (err, user) {

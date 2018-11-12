@@ -47,6 +47,16 @@ admin.initializeApp({
 const fdb = admin.database();
 const ref = fdb.ref('/users');
 
+router.get('/', (req, res) => {
+  Admin.find({}, { _id: 0, __v: 0 }, (err, admins) => {
+    if (err) {
+      return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al obtener administradores' });
+    }
+
+    res.status(200).json({ status: 'OK', admins: admins });
+  });
+});
+
 
 // Endpoint para que un admin inicie sesion
 router.post('/login', (req, res) => {

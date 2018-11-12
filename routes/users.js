@@ -105,7 +105,13 @@ router.get('/:username/feed', (req, res) => {
 });
 
 router.get('/', function (req, res) {
-  res.status(200).end();
+  User.find({}, { _id: 0, __v: 0 }, (err, users) => {
+    if (err) {
+      return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al obtener usuarios' });
+    }
+
+    res.status(200).json({ status: 'OK', users: users });
+  })
 });
 
 // Endpoint para login

@@ -6,11 +6,11 @@ const AdminSchema = new mongoose.Schema({
     lastname: String,
     username: String,
     password: String,
+    email: String,
 });
 
-AdminSchema.methods.isValidPassword = function(password) {
+AdminSchema.methods.isValidPassword = function (password) {
     return bcrypt.compareSync(password, this.password, function (err, res) {
-        console.log('res', res);
         return res === true;
     });
 };

@@ -1,82 +1,54 @@
-const fs = require('fs');
 const express = require('express');
 const router = express.Router();
 const User = require('../schemas/user');
 const bcrypt = require('bcrypt');
 const saltRounds = 5;
-const multer = require('multer');
-const url = require('url');
-
-const imagesDestination = 'images/';
-
-// Si el directorio donde se guardaran las imagenes no existe, lo crea
-if (!fs.existsSync(imagesDestination)) {
-  fs.mkdirSync(imagesDestination);
-}
-
-// Configuracion de almacenamiento para multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, imagesDestination);
-  },
-
-  filename: function (req, file, cb) {
-    // Formato del nombre de la imagen: username + fecha + nombre original
-    const newFileName = `${req.body.username}-${new Date().toISOString()}-${file.originalname}`
-    cb(null, newFileName);
-  },
-});
-
-const upload = multer({ storage: storage });
+const upload = require('../config/multer');
+const cloudinary = require('../config/cloudinary');
 
 // Endpoint para subir una imagen
 router.post('/upload',
   upload.single('image'),
   (req, res, next) => {
-    const fullUrl = url.format({
-      protocol: req.protocol,
-      host: req.get('host'),
-      pathname: req.file.path,
-    });
 
-    const imageData = {
-      description: req.body.description,
-      emoji: req.body.emoji,
-      lat: req.body.lat,
-      lng: req.body.lng,
-      url: fullUrl,
-    };
+    // Guarda la imagen en el hosting de cloudinary
+    let imageData;
+    cloudinary.v2.uploader.upload_stream(
+      function (error, result) {
+        imageData = {
+          description: req.body.description,
+          emoji: req.body.emoji,
+          lat: req.body.lat,
+          lng: req.body.lng,
+          url: result.url,
+        }
 
-    // Agrega la foto al registro de fotos del usuario
-    User.findOne({ username: req.body.username }, (err, user) => {
-      if (err) {
-        console.log('Error al guardar imagen');
-        return res
-                .status(500)
-                .json({ status: 'Error', message: 'Hubo un error en el servidor al guardar la imagen:' });
-      }
-
-      // Verifica que el usuario exista
-      if (!user) {
-        console.log(`${req.body.username} no existe`);
-        // Elimina el archivo recien creado
-        fs.unlink(req.file.path, (err) => {
+        // Agrega la imagen al registro de fotos del usuario
+        User.findOne({ username: req.body.username }, (err, user) => {
           if (err) {
-            throw err;
+            console.log('Error al guardar imagen');
+            return res
+              .status(500)
+              .json({ status: 'Error', message: 'Hubo un error en el servidor al guardar la imagen:' });
           }
+
+          // Verifica que el usuario exista
+          if (!user) {
+            console.log(`${req.body.username} no existe`);
+
+            return res
+              .status(404)
+              .json({ status: 'Error', message: 'El usuario especificado no existe!' });
+          }
+
+          user.images.push(imageData);
+          user.save();
+          res
+            .status(201)
+            .json({ status: 'OK', message: 'Imagen almacenada correctamente' });
         });
 
-        return res
-          .status(404)
-          .json({ status: 'Error', message: 'El usuario especificado no existe!' });
-      }
-
-      user.images.push(imageData);
-      user.save();
-      res
-        .status(201)
-        .json({ status: 'OK', message: 'Imagen almacenada correctamente' });
-    });
+      }).end(req.file.buffer);
   });
 
 // Endpoint para obtener el feed del usuario

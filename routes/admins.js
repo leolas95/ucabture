@@ -1,39 +1,13 @@
-const fs = require('fs');
 const express = require('express');
 const router = express.Router();
 const Admin = require('../schemas/admin');
 const User = require('../schemas/user');
 const bcrypt = require('bcrypt');
 const saltRounds = 5;
-const multer = require('multer');
-const url = require('url');
 const admin = require('firebase-admin');
 const serviceAccount = require('../ucabture-private-key.json');
-
-//
-// Configuracion para multer
-//
-const imagesDestination = 'bcastimages/';
-
-// Si el directorio donde se guardaran las imagenes no existe, lo crea
-if (!fs.existsSync(imagesDestination)) {
-  fs.mkdirSync(imagesDestination);
-}
-
-// Configuracion de almacenamiento para multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, imagesDestination);
-  },
-
-  filename: function (req, file, cb) {
-    // Formato del nombre de la imagen: username + fecha + nombre original
-    const newFileName = `${req.body.username}-${new Date().toISOString()}-${file.originalname}`
-    cb(null, newFileName);
-  },
-});
-
-const upload = multer({ storage: storage });
+const upload = require('../config/multer');
+const cloudinary = require('../config/cloudinary');
 
 
 //
@@ -94,9 +68,10 @@ router.post('/signup', (req, res) => {
   const lastname = req.body.lastname;
   const username = req.body.username;
   const password = req.body.password;
+  const email = req.body.email;
 
-  if (!name || !lastname || !username || !password ||
-    !name.trim() || !lastname.trim() || !username.trim() || !password.trim()) {
+  if (!name || !lastname || !username || !password || !email ||
+    !name.trim() || !lastname.trim() || !username.trim() || !password.trim() || !email.trim()) {
     return res.status(400).json({ message: 'Los campos no pueden estar vacios' });
   }
 
@@ -119,6 +94,7 @@ router.post('/signup', (req, res) => {
         lastname: lastname,
         username: username,
         password: hashedPassword,
+        email: email,
       };
 
       Admin.create(adminData, function (err, newAdmin) {
@@ -135,60 +111,57 @@ router.post('/signup', (req, res) => {
 
 
 // Endpoint para realizar una difusion a los usuarios
-router.post('/bcast', upload.single('image'), (req, res) => {
-  console.log(req.body);
+router.post('/bcast',
+  upload.single('image'),
+  (req, res) => {
 
-  Admin.findOne({ username: req.body.username }, (err, admin) => {
-    if (err) {
-      console.log('Error interno del servidor al guardar imagen');
-      res
-        .status(500)
-        .json({ status: 'Error', message: 'Hubo un error en el servidor al guardar la imagen:' });
-    }
+    // Guarda la imagen en el hosting de cloudinary
+    cloudinary.v2.uploader.upload_stream(
+      function (error, result) {
 
-    // Si el administrador no existe, elimina la imagen
-    if (!admin) {
-      console.log(`Admin ${req.body.username} no existe`);
-      fs.unlink(req.file.path, (err) => {
-        if (err) {
-          throw err;
-        }
-      });
+        // Verifica que el admin que subio la imagen exista
+        Admin.findOne({ username: req.body.username }, (err, admin) => {
+          if (err) {
+            console.log('Error interno del servidor al guardar imagen');
+            res
+              .status(500)
+              .json({ status: 'Error', message: 'Hubo un error en el servidor al guardar la imagen:' });
+          }
 
-      return res
-        .status(404)
-        .json({ status: 'Error', message: 'El administrador indicado no existe' });
-    }
+          // Si el administrador no existe, elimina la imagen
+          if (!admin) {
+            console.log(`Admin ${req.body.username} no existe`);
 
-    // Obtiene la url completa de donde poder descargar la imagen
-    const fullUrl = url.format({
-      protocol: req.protocol,
-      host: req.get('host'),
-      pathname: req.file.path,
-    });
+            return res
+              .status(404)
+              .json({ status: 'Error', message: 'El administrador indicado no existe' });
+          }
 
-    // Construye el payload de la difusion
-    const bcastPayload = {
-      title: req.body.title,
-      description: req.body.description,
-      imageUrl: fullUrl,
-    }
-    const groups = req.body.groups.split(',');
+          // Construye el payload de la difusion
+          const bcastPayload = {
+            title: req.body.title,
+            description: req.body.description,
+            imageUrl: result.url,
+          }
 
-    // Busca todos los usuarios pertenecientes a los grupos indicados
-    User.find({ group: { $in: groups } }, (err, users) => {
-      if (err) {
-        throw err;
+          const groups = req.body.groups.split(',');
+
+          // Busca todos los usuarios pertenecientes a los grupos indicados
+          User.find({ group: { $in: groups } }, (err, users) => {
+            if (err) {
+              throw err;
+            }
+
+            // Envia la difusion a los usuarios
+            let usernames = users.map(user => user.username);
+            broadcastToUsers(usernames, bcastPayload);
+          });
+
+          res.status(201).json({ status: 'OK', message: 'Imagen difundida exitosamente' });
+        });
       }
-
-      // Envia la difusion a los usuarios
-      let usernames = users.map(user => user.username);
-      broadcastToUsers(usernames, bcastPayload);
-    });
-
-    res.status(201).json({ status: 'OK', message: 'Imagen difundida exitosamente' });
+    ).end(req.file.buffer);
   });
-});
 
 // Envia la difusion a todos los usuarios indicados
 function broadcastToUsers(usernames, payload) {

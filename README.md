@@ -23,12 +23,26 @@ npm install
 
 para instalar las dependencias.
 
-3. Para iniciar el servidor:
+3. En el directorio raiz del proyecto, crear el archivo `.dotenv` con las variables de entorno:
+```
+# Host donde se almacena la base de datos. Si es en local, es localhost
+DB_HOST=localhost
+# Puerto donde esta ejecutandose el servidor de la base de datos. En mongo por defecto es 27017
+DB_PORT=27017
+# Nombre de la base de datos de desarrollo
+DB_DEVDB=expresateucabdb
+# Nombre de la base de datos de pruebas
+DB_TESTDB=expresateucabtestdb
+# Entorno de ejecucion: production, qa, dev
+NODE_ENV=dev
+```
+
+4. Para iniciar el servidor:
 ```
 npm start
 ```
 
-4. Para ejecutar las pruebas:
+5. Para ejecutar las pruebas:
 
 ```
 npm test
@@ -41,6 +55,7 @@ npm test
 * `schemas/`: Directorio con los esquemas de los modelos de la base de datos
 * `tests/`: Directorio con los archivos para realizar las pruebas
 * `app.js`: Archivo principal que arranca el servidor
+* `config/`: Directorio donde estan las configuraciones para funcionalidades comunes, como la de subir imagenes
 
 # Endpoints
 

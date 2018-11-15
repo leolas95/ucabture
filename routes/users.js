@@ -11,21 +11,51 @@ router.post('/upload',
   upload.single('image'),
   (req, res, next) => {
 
+    let description = req.body.description;
+    let emoji = req.body.emoji;
+    let lat = req.body.lat;
+    let lng = req.body.lng;
+    let date = req.body.date;
+    let username = req.body.username;
+
+    // Valida que los campos no esten vacios
+    if (!description || !emoji || !lat || !lng || !date || !username ||
+      !description.trim() || !emoji.trim() || !lat.trim() ||
+      !lng.trim() || !date.trim() || !username.trim()) {
+      return res.status(400).json({ status: 'Error', message: 'Los campos no pueden estar vacios' });
+    }
+
+    if (emoji < 1 || emoji > 6) {
+      return res.status(400).json({ status: 'Error', message: 'El valor del emoji debe estar entre 1 y 6' });
+    }
+
+    if (req.file === undefined || req.file.buffer === undefined) {
+      return res.status(400).json({ status: 'Error', message: 'El campo de la imagen no debe estar vacio' });
+    }
+
+    // Elimina los espacios en blanco de los campos
+    description = description.trim();
+    emoji = emoji.trim();
+    lat = lat.trim();
+    lng = lng.trim();
+    date = date.trim();
+    username = username.trim();
+
     // Guarda la imagen en el hosting de cloudinary
     let imageData;
     cloudinary.v2.uploader.upload_stream(
       function (error, result) {
         imageData = {
-          description: req.body.description,
-          emoji: req.body.emoji,
-          lat: req.body.lat,
-          lng: req.body.lng,
-          date: req.body.date,
+          description: description,
+          emoji: emoji,
+          lat: lat,
+          lng: lng,
+          date: date,
           url: result.url,
         }
 
         // Agrega la imagen al registro de fotos del usuario
-        User.findOne({ username: req.body.username }, (err, user) => {
+        User.findOne({ username: username }, (err, user) => {
           if (err) {
             console.log('Error al guardar imagen');
             return res
@@ -35,7 +65,7 @@ router.post('/upload',
 
           // Verifica que el usuario exista
           if (!user) {
-            console.log(`${req.body.username} no existe`);
+            console.log(`${username} no existe`);
 
             return res
               .status(404)
@@ -54,7 +84,13 @@ router.post('/upload',
 
 // Endpoint para obtener el feed del usuario
 router.get('/:username/feed', (req, res) => {
-  const username = req.params.username;
+  let username = req.params.username;
+
+  if (!username || !username.trim()) {
+    return res.status(400).json({ status: 'Error', message: 'El campo username no puede estar vacio' });
+  }
+
+  username = username.trim();
 
   User.findOne({ username: username }, (err, user) => {
     if (err) {
@@ -88,53 +124,62 @@ router.get('/', function (req, res) {
 // Endpoint para login
 router.post('/login', function (req, res) {
 
-  const username = req.body.username;
-  const password = req.body.password;
+  let username = req.body.username;
+  let password = req.body.password;
 
-  if (username && password) {
-
-    User.findOne({ username: username }, function (err, user) {
-      if (err) {
-        return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al hacer login' });
-      }
-
-      if (user) {
-        console.log(`${username} existe`);
-        console.log(user.isValidPassword(password));
-
-        // Verifica que la clave sea valida
-        if (user.isValidPassword(password)) {
-          console.log('Fino puede pasar');
-          return res.status(200).json({ status: "OK", message: "Sesion iniciada correctamente" });
-        } else {
-          console.log('Clave incorrecta');
-          return res.status(400).json({ status: "Error", message: "Clave incorrecta" });
-        }
-      } else {
-        console.log(`Usuario ${username} no existe`);
-        return res.status(400).json({ status: "Error", message: "No puede iniciar sesion, el usuario especificado no esta registrado" });
-      }
-    });
-  } else {
-    res
-      .status(400)
-      .json({ status: "Error", message: "Los campos no deben estar vacios" });
+  if (!username || !username.trim() || !password || !password.trim()) {
+    return res.status(400).json({ status: 'Error', message: 'Los campos username y password no pueden estar vacios' });
   }
+
+  // Elimina los espacios en blanco de los campos
+  username = username.trim();
+  password = password.trim();
+
+  User.findOne({ username: username }, function (err, user) {
+    if (err) {
+      return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al hacer login' });
+    }
+
+    if (user) {
+      console.log(`${username} existe`);
+      console.log(user.isValidPassword(password));
+
+      // Verifica que la clave sea valida
+      if (user.isValidPassword(password)) {
+        console.log('Fino puede pasar');
+        return res.status(200).json({ status: "OK", message: "Sesion iniciada correctamente" });
+      } else {
+        console.log('Clave incorrecta');
+        return res.status(400).json({ status: "Error", message: "Clave incorrecta" });
+      }
+    } else {
+      console.log(`Usuario ${username} no existe`);
+      return res.status(400).json({ status: "Error", message: "No puede iniciar sesion, el usuario especificado no esta registrado" });
+    }
+  });
 });
 
 // Endpoint para registrar al usuario
 router.post('/signup', function (req, res) {
-  const name = req.body.name;
-  const lastname = req.body.lastname;
-  const username = req.body.username;
-  const password = req.body.password;
-  const email = req.body.email;
-  const group = req.body.group;
+  let name = req.body.name;
+  let lastname = req.body.lastname;
+  let username = req.body.username;
+  let password = req.body.password;
+  let email = req.body.email;
+  let group = req.body.group;
 
   if (!name || !lastname || !username || !password || !email || !group ||
     !name.trim() || !lastname.trim() || !username.trim() || !password.trim() || !email.trim() || !group.trim()) {
     return res.status(400).json({ message: 'Los campos no pueden estar vacios' });
   }
+
+  // Elimina los espacios en blanco de los campos
+  name = name.trim();
+  lastname = lastname.trim();
+  username = username.trim();
+  password = password.trim();
+  email = email.trim();
+  group = group.trim();
 
   // Busca a ver si el usuario ya existe
   User.findOne({ username: username }, (err, user) => {

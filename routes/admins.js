@@ -9,6 +9,7 @@ const serviceAccount = require('../ucabture-private-key.json');
 const upload = require('../config/multer');
 const cloudinary = require('../config/cloudinary');
 
+const acceptedGroups = ['estudiantes', 'proftcompleto', 'proftconvencional', 'egresados', 'empleados'];
 
 //
 // Configuracion de Firebase realtime database
@@ -45,10 +46,13 @@ router.get('/resume', (req, res) => {
 
 // Endpoint para obtener el historial de difusiones del admin
 router.get('/:username/record', (req, res) => {
-  const username = req.params.username;
+  let username = req.params.username;
   if (!username || !username.trim()) {
     return res.status(400).json({ status: 'Error', message: 'Debe indicar un nombre de usuario' });
   }
+
+  // Elimina los espacios en blanco del campo
+  username = username.trim();
 
   Admin.findOne({ username: username }, { broadcasts: 1 }, (err, admin) => {
 
@@ -59,20 +63,24 @@ router.get('/:username/record', (req, res) => {
     if (!admin) {
       return res.status(404).json({ status: 'Error', message: 'El administrador indicado no existe' });
     }
-    
+
     res.status(200).json({ record: admin.broadcasts });
   })
 })
 
 // Endpoint para que un admin inicie sesion
 router.post('/login', (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
+  let username = req.body.username;
+  let password = req.body.password;
 
   // Verifica que los campos no esten vacios
   if (!username || !password || !username.trim() || !password.trim()) {
     return res.status(400).json({ message: 'Campos de usuario o clave no pueden estar vacios' });
   }
+
+  // Elimina los espacios en blanco de los campos
+  username = username.trim();
+  password = password.trim();
 
   // Verifica que el usuario este registrado
   Admin.findOne({ username: username }, (err, admin) => {
@@ -96,16 +104,24 @@ router.post('/login', (req, res) => {
 
 // Endpoint para registrar un nuevo admin
 router.post('/signup', (req, res) => {
-  const name = req.body.name;
-  const lastname = req.body.lastname;
-  const username = req.body.username;
-  const password = req.body.password;
-  const email = req.body.email;
+  let name = req.body.name;
+  let lastname = req.body.lastname;
+  let username = req.body.username;
+  let password = req.body.password;
+  let email = req.body.email;
 
   if (!name || !lastname || !username || !password || !email ||
-    !name.trim() || !lastname.trim() || !username.trim() || !password.trim() || !email.trim()) {
+      !name.trim() || !lastname.trim() || !username.trim() ||
+      !password.trim() || !email.trim()) {
     return res.status(400).json({ message: 'Los campos no pueden estar vacios' });
   }
+
+  // Elimina los espacios en blanco de los campos
+  name = name.trim();
+  lastname = lastname.trim();
+  username = username.trim();
+  password = password.trim();
+  email = email.trim();
 
   // Verifica que no exista un usuario con el mismo username
   Admin.findOne({ username: username }, (err, admin) => {
@@ -147,22 +163,50 @@ router.post('/bcast',
   upload.single('image'),
   (req, res) => {
 
+    let title = req.body.title;
+    let description = req.body.description;
+    let groups = req.body.groups;
+    let username = req.body.username;
+    
+    if (!title || !description || !groups || !username || !title.trim() || !description.trim() || !groups.trim() || !username.trim()) {
+      return res.status(400).json({ status: 'Error', message: 'Los campos no pueden estar vacios' });
+    }
+
+    // Elimina los espacios en blanco de los campos
+    title = title.trim();
+    description = description.trim();
+    username = username.trim();
+
+    if (req.file === undefined || req.file.buffer === undefined) {
+      return res.status(400).json({ status: 'Error', message: 'El campo de la imagen no debe estar vacio' });
+    }
+
+    // Separa los grupos indicados, y elimina los espacios en blanco sobrantes
+    groups = groups.split(',');
+    groups = groups.map(e => e.trim());
+
+    groups.map(e => {
+      if (acceptedGroups.includes(e) === false) {
+        return res.status(400).json({ status: 'Error', message: `Uno de los grupos indicados no existe. Los grupos validos son: ${acceptedGroups}` })
+      }
+    });
+
     // Guarda la imagen en el hosting de cloudinary
     cloudinary.v2.uploader.upload_stream(
       function (error, result) {
 
         // Verifica que el admin que subio la imagen exista
-        Admin.findOne({ username: req.body.username }, (err, admin) => {
+        Admin.findOne({ username: username }, (err, admin) => {
           if (err) {
             console.log('Error interno del servidor al guardar imagen');
-            res
+            return res
               .status(500)
               .json({ status: 'Error', message: 'Hubo un error en el servidor al guardar la imagen:' });
           }
 
           // Si el administrador no existe, elimina la imagen
           if (!admin) {
-            console.log(`Admin ${req.body.username} no existe`);
+            console.log(`Admin ${username} no existe`);
 
             return res
               .status(404)
@@ -171,13 +215,11 @@ router.post('/bcast',
 
           // Construye el payload de la difusion
           const bcastPayload = {
-            title: req.body.title,
-            description: req.body.description,
+            title: title,
+            description: description,
             imageUrl: result.url,
             timestamp: Date.now(),
           }
-
-          const groups = req.body.groups.split(',');
 
           // Guarda la difusion en el historial de difusiones del admin
           admin.broadcasts.push(bcastPayload);

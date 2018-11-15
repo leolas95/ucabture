@@ -32,6 +32,17 @@ router.get('/', (req, res) => {
 });
 
 
+// Endpoint para obtener el resumen de publicaciones que se muestran a los admins
+router.get('/resume', (req, res) => {
+  User.find({}, { images: 1, _id: 0 }, (err, images) => {
+    if (err) {
+      return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al obtener resumen' });
+    }
+
+    res.status(200).json({ resume: images });
+  });
+});
+
 // Endpoint para que un admin inicie sesion
 router.post('/login', (req, res) => {
   const username = req.body.username;

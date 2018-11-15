@@ -20,6 +20,7 @@ router.post('/upload',
           emoji: req.body.emoji,
           lat: req.body.lat,
           lng: req.body.lng,
+          date: req.body.date,
           url: result.url,
         }
 
@@ -58,9 +59,7 @@ router.get('/:username/feed', (req, res) => {
   User.findOne({ username: username }, (err, user) => {
     if (err) {
       console.log('Error al obtener feed de', username);
-      res
-        .status(400)
-        .json({ status: 'Error', message: 'Hubo un error al obtener el feed del usuario' });
+      return res.status(400).json({ status: 'Error', message: 'Hubo un error al obtener el feed del usuario' });
     }
 
 
@@ -95,7 +94,9 @@ router.post('/login', function (req, res) {
   if (username && password) {
 
     User.findOne({ username: username }, function (err, user) {
-      if (err) throw err;
+      if (err) {
+        return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al hacer login' });
+      }
 
       if (user) {
         console.log(`${username} existe`);
@@ -104,20 +105,14 @@ router.post('/login', function (req, res) {
         // Verifica que la clave sea valida
         if (user.isValidPassword(password)) {
           console.log('Fino puede pasar');
-          res
-            .status(200)
-            .json({ status: "OK", message: "Sesion iniciada correctamente" });
+          return res.status(200).json({ status: "OK", message: "Sesion iniciada correctamente" });
         } else {
           console.log('Clave incorrecta');
-          res
-            .status(400)
-            .json({ status: "Error", message: "Clave incorrecta" });
+          return res.status(400).json({ status: "Error", message: "Clave incorrecta" });
         }
       } else {
         console.log(`Usuario ${username} no existe`);
-        res
-          .status(400)
-          .json({ status: "Error", message: "No puede iniciar sesion, el usuario especificado no esta registrado" });
+        return res.status(400).json({ status: "Error", message: "No puede iniciar sesion, el usuario especificado no esta registrado" });
       }
     });
   } else {
@@ -144,15 +139,13 @@ router.post('/signup', function (req, res) {
   // Busca a ver si el usuario ya existe
   User.findOne({ username: username }, (err, user) => {
     if (err) {
-      return res.status(500).end();
+      return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al registrar usuario' });
     }
 
     // Si es asi, entonces no puede registrarse
     if (user) {
       console.log(`${user.name} ${user.lastname} ya existe`);
-      res
-        .status(400)
-        .json({ status: "Error", message: "User already exists" });
+      return res.status(400).json({ status: "Error", message: "User already exists" });
     } else {
       // Sino, crea al nuevo usuario
       console.log('Nuevo usuario');
@@ -172,7 +165,7 @@ router.post('/signup', function (req, res) {
         User.create(userData, function (err, newUser) {
           if (err) {
             console.log('Error al crear usuario');
-            throw err;
+            return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al crear usuario' });
           } else {
             console.log(`Usuario ${newUser.username} creado con exito`);
             res

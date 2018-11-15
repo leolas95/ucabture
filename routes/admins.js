@@ -4,7 +4,7 @@ const Admin = require('../schemas/admin');
 const User = require('../schemas/user');
 const bcrypt = require('bcrypt');
 const saltRounds = 5;
-const admin = require('firebase-admin');
+const firebaseAdmin = require('firebase-admin');
 const serviceAccount = require('../ucabture-private-key.json');
 const upload = require('../config/multer');
 const cloudinary = require('../config/cloudinary');
@@ -13,12 +13,12 @@ const cloudinary = require('../config/cloudinary');
 //
 // Configuracion de Firebase realtime database
 //
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(serviceAccount),
   databaseURL: "https://ucabture-fff32.firebaseio.com"
 });
 
-const fdb = admin.database();
+const fdb = firebaseAdmin.database();
 const ref = fdb.ref('/users');
 
 router.get('/', (req, res) => {
@@ -42,6 +42,27 @@ router.get('/resume', (req, res) => {
     res.status(200).json({ resume: images });
   });
 });
+
+// Endpoint para obtener el historial de difusiones del admin
+router.get('/:username/record', (req, res) => {
+  const username = req.params.username;
+  if (!username || !username.trim()) {
+    return res.status(400).json({ status: 'Error', message: 'Debe indicar un nombre de usuario' });
+  }
+
+  Admin.findOne({ username: username }, { broadcasts: 1 }, (err, admin) => {
+
+    if (err) {
+      return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al buscar admin' });
+    }
+
+    if (!admin) {
+      return res.status(404).json({ status: 'Error', message: 'El administrador indicado no existe' });
+    }
+    
+    res.status(200).json({ record: admin.broadcasts });
+  })
+})
 
 // Endpoint para que un admin inicie sesion
 router.post('/login', (req, res) => {
@@ -153,14 +174,19 @@ router.post('/bcast',
             title: req.body.title,
             description: req.body.description,
             imageUrl: result.url,
+            timestamp: Date.now(),
           }
 
           const groups = req.body.groups.split(',');
 
+          // Guarda la difusion en el historial de difusiones del admin
+          admin.broadcasts.push(bcastPayload);
+          admin.save();
+
           // Busca todos los usuarios pertenecientes a los grupos indicados
           User.find({ group: { $in: groups } }, (err, users) => {
             if (err) {
-              throw err;
+              return res.status(500).json({ status: 'Error', message: 'Error interno del servidor al obtener usuarios' });
             }
 
             // Envia la difusion a los usuarios
@@ -191,7 +217,7 @@ function appendBroadcastToUser(username, payload) {
       description: payload.description,
       url: payload.imageUrl,
       read: false,
-      timestamp: Date.now()
+      timestamp: payload.timestamp,
     }
     ref.child(username).update(obj)
   });

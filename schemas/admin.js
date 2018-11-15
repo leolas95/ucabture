@@ -7,6 +7,7 @@ const AdminSchema = new mongoose.Schema({
     username: String,
     password: String,
     email: String,
+    broadcasts: Array,
 });
 
 AdminSchema.methods.isValidPassword = function (password) {

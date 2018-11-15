@@ -2,7 +2,7 @@
   "name": "ucabture",
   "version": "1.0.0",
   "description": "Backend de la app ucabture para la tesis de Milad y Mariam",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
     "test": "mocha --reporter list tests/"

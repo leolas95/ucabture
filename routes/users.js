@@ -6,6 +6,17 @@ const saltRounds = 5;
 const upload = require('../config/multer');
 const cloudinary = require('../config/cloudinary');
 
+/*const fs = require('fs');
+
+router.post('/up', upload.single('img'), (req, res) => {
+  let buf = Buffer.from(req.body.img, 'base64');
+  let wstream = fs.createWriteStream('foo.png');
+  wstream.write(buf);
+  wstream.end();
+  res.sendStatus(200);
+  
+});*/
+
 // Endpoint para subir una imagen
 router.post('/upload',
   upload.single('image'),
@@ -17,6 +28,15 @@ router.post('/upload',
     let lng = req.body.lng;
     let date = req.body.date;
     let username = req.body.username;
+
+    console.log('desc =', description);
+    console.log('emoji =', emoji);
+    console.log('lat =', lat);
+    console.log('lng =', lng);
+    console.log('date =', date);
+    console.log('username =', username);
+    console.log('req.file =', req.file);
+    
 
     // Valida que los campos no esten vacios
     if (!description || !emoji || !lat || !lng || !date || !username ||
